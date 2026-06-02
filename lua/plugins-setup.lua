@@ -73,30 +73,36 @@ return packer.startup(function(use)
 
 	-- managing & installing lsp servers, linters & formatters
 	use("williamboman/mason.nvim") -- in charge of managing lsp servers, linters & formatters
-	use("williamboman/mason-lspconfig.nvim") -- bridges gap b/w mason & lspconfig
+	use({ "williamboman/mason-lspconfig.nvim", branch = "main" }) -- bridges gap b/w mason & lspconfig
 
 	-- configuring lsp servers
 	use("neovim/nvim-lspconfig") -- easily configure language servers
 	use("hrsh7th/cmp-nvim-lsp") -- for autocompletion
-	use({ "glepnir/lspsaga.nvim", branch = "main" }) -- enhanced lsp uis
+	use({
+		"jinzhongjia/LspUI.nvim",
+		config = function()
+			require("LspUI").setup({})
+		end,
+	})
 	use("jose-elias-alvarez/typescript.nvim") -- additional functionality for typescript server (e.g. rename file & update imports)
 	use("onsails/lspkind.nvim") -- vs-code like icons for autocompletion
 
 	-- formatting & linting
-	use("jose-elias-alvarez/null-ls.nvim") -- configure formatters & linters
-	use("jayp0521/mason-null-ls.nvim") -- bridges gap b/w mason & null-ls
+	use("stevearc/conform.nvim") -- configure formatters
+	use("mfussenegger/nvim-lint") -- configure linters
 
-	-- treesitter configuration
+	-- treesitter: Neovim 0.12+ uses built-in vim.treesitter for highlighting.
+	-- The legacy `master` branch of nvim-treesitter is frozen/incompatible.
+	-- The rewritten `main` branch is the supported migration path.
 	use({
 		"nvim-treesitter/nvim-treesitter",
-		run = function()
-			require("nvim-treesitter.install").update({ with_sync = true })
-		end,
+		branch = "main",
+		run = ":TSUpdate",
 	})
 
 	-- auto closing
 	use("windwp/nvim-autopairs") -- autoclose parens, brackets, quotes, etc...
-	use({ "windwp/nvim-ts-autotag", after = "nvim-treesitter" }) -- autoclose tags
+	use("windwp/nvim-ts-autotag") -- autoclose tags (uses built-in vim.treesitter)
 
 	-- git integration
 	use("lewis6991/gitsigns.nvim") -- show line modifications on left hand side
@@ -107,6 +113,7 @@ return packer.startup(function(use)
 	use("lambdalisue/suda.vim")
 
 	use("f-person/auto-dark-mode.nvim")
+	use({ "echasnovski/mini.nvim", branch = "stable" })
 
 	use("ellisonleao/gruvbox.nvim")
 

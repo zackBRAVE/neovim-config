@@ -8,6 +8,8 @@ keymap.set("", "h", ":", { noremap = true })
 keymap.set("", "U", "<C-r>", { noremap = true })
 
 if not vim.g.vscode then
+	local has_comment_api, comment_api = pcall(require, "Comment.api")
+
 	-- save and quit
 	keymap.set("", "Q", ":q<CR>", { noremap = true })
 	keymap.set("", "<C-q>", ":qa<CR>", { noremap = true })
@@ -15,6 +17,19 @@ if not vim.g.vscode then
 	keymap.set("", "S", ":w!<CR>", { noremap = true })
 	keymap.set("", "<C-s>", ":w suda://%<CR>", { noremap = true })
 	keymap.set("", "<C-q>", ":q!<CR>", { noremap = true })
+
+	if has_comment_api then
+		local esc = vim.api.nvim_replace_termcodes("<ESC>", true, false, true)
+		local toggle_visual_comment = function()
+			vim.api.nvim_feedkeys(esc, "nx", false)
+			comment_api.locked("toggle.linewise")(vim.fn.visualmode())
+		end
+
+		keymap.set("n", "<C-_>", comment_api.toggle.linewise.current, { desc = "Toggle comment", silent = true })
+		keymap.set("x", "<C-_>", toggle_visual_comment, { desc = "Toggle comment", silent = true })
+		keymap.set("n", "<leader>/", comment_api.toggle.linewise.current, { desc = "Toggle comment", silent = true })
+		keymap.set("x", "<leader>/", toggle_visual_comment, { desc = "Toggle comment", silent = true })
+	end
 end
 
 -- search
