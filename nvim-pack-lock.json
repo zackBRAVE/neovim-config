@@ -124,9 +124,9 @@
       "src": "https://github.com/nvim-telescope/telescope-fzf-native.nvim"
     },
     "telescope.nvim": {
-      "rev": "a0bbec21143c7bc5f8bb02e0005fa0b982edc026",
+      "rev": "5255aa27c422de944791318024167ad5d40aad20",
       "src": "https://github.com/nvim-telescope/telescope.nvim",
-      "version": "'0.1.x'"
+      "version": "'v0.2.2'"
     },
     "tender.vim": {
       "rev": "b66dc330aff998dff9d44459d84bc1c5f4304fcc",

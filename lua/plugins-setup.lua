@@ -140,7 +140,7 @@ function M.setup()
 		gh("NLKNguyen/papercolor-theme"),
 		gh("nvim-tree/nvim-tree.lua"),
 		gh("nvim-telescope/telescope-fzf-native.nvim"),
-		gh("nvim-telescope/telescope.nvim", { version = "0.1.x" }),
+		gh("nvim-telescope/telescope.nvim", { version = "v0.2.2" }),
 	})
 end
 

@@ -16,8 +16,8 @@ telescope.setup({
   defaults = {
     mappings = {
       i = {
-        ["<C-p>"] = actions.move_selection_previous, -- move to prev result
-        ["<C-n>"] = actions.move_selection_next, -- move to next result
+        ["<C-l>"] = actions.move_selection_previous, -- up (matches custom cursor scheme)
+        ["<C-k>"] = actions.move_selection_next, -- down (matches custom cursor scheme)
         ["<C-q>"] = actions.send_selected_to_qflist + actions.open_qflist, -- send selected to quickfixlist
       },
     },
