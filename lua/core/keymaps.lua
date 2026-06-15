@@ -42,16 +42,22 @@ if not vim.g.vscode then
 	keymap.set("n", "<M-p>", "<cmd>Telescope<CR>", { noremap = true, desc = "Telescope" })
 
 	vim.api.nvim_create_user_command("NvimTreeToggle", function()
+		vim.api.nvim_del_user_command("NvimTreeToggle")
 		plugin_setup.load_nvim_tree()
-		pcall(vim.api.nvim_del_user_command, "NvimTreeToggle")
 		vim.cmd("NvimTreeToggle")
 	end, {})
 
 	vim.api.nvim_create_user_command("NvimTreeFindFile", function()
+		vim.api.nvim_del_user_command("NvimTreeFindFile")
 		plugin_setup.load_nvim_tree()
-		pcall(vim.api.nvim_del_user_command, "NvimTreeFindFile")
 		vim.cmd("NvimTreeFindFile")
 	end, {})
+
+	keymap.set("n", "<leader>e", function()
+		vim.api.nvim_del_user_command("NvimTreeToggle")
+		plugin_setup.load_nvim_tree()
+		vim.cmd("NvimTreeToggle")
+	end, { noremap = true, desc = "Toggle file explorer" })
 end
 
 -- search
