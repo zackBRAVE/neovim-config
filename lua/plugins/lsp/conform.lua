@@ -4,18 +4,56 @@ if not setup then
 	return
 end
 
+local lsp_util = require("plugins.lsp.util")
+
 -- configure conform
+local function first_available(bufnr, ...)
+	for i = 1, select("#", ...) do
+		local formatter = select(i, ...)
+		if conform.get_formatter_info(formatter, bufnr).available then
+			return formatter
+		end
+	end
+
+	return select(1, ...)
+end
+
+local function prefer_oxfmt(bufnr)
+	if not lsp_util.is_ox_project(bufnr) then
+		return "prettier"
+	end
+
+	return first_available(bufnr, "oxfmt", "prettier")
+end
+
 conform.setup({
 	-- setup formatters
 	formatters_by_ft = {
-		json = { "prettier" },
+		json = function(bufnr)
+			return { prefer_oxfmt(bufnr) }
+		end,
 		lua = { "stylua" },
-		javascript = { "prettier" },
-		typescript = { "prettier" },
-		typescriptreact = { "prettier" },
-		css = { "prettier" },
-		html = { "prettier" },
-		markdown = { "prettier" },
+		javascript = function(bufnr)
+			return { prefer_oxfmt(bufnr) }
+		end,
+		javascriptreact = function(bufnr)
+			return { prefer_oxfmt(bufnr) }
+		end,
+		typescript = function(bufnr)
+			return { prefer_oxfmt(bufnr) }
+		end,
+		typescriptreact = function(bufnr)
+			return { prefer_oxfmt(bufnr) }
+		end,
+		css = function(bufnr)
+			return { prefer_oxfmt(bufnr) }
+		end,
+		html = function(bufnr)
+			return { prefer_oxfmt(bufnr) }
+		end,
+		markdown = function(bufnr)
+			return { prefer_oxfmt(bufnr) }
+		end,
 	},
 	-- format on save
 	format_on_save = function(bufnr)
@@ -27,10 +65,9 @@ conform.setup({
 			return
 		end
 
-		-- format with conform
-		require("conform").format({
-			bufnr = bufnr,
+		return {
 			timeout_ms = 5000,
-		})
+			lsp_format = "fallback",
+		}
 	end,
 })

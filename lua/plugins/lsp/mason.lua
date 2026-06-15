@@ -22,12 +22,14 @@ mason_lspconfig.setup({
 	-- list of servers for mason to install
 	ensure_installed = {
 		"ast_grep",
-		"ts_ls",
+		"tsgo",
+		"oxlint",
+		"oxfmt",
 		"html",
 		"cssls",
 		"tailwindcss",
 		"lua_ls",
 		"emmet_ls",
 	},
-	automatic_installation = true,
+	automatic_enable = false,
 })

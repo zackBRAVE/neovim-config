@@ -9,6 +9,7 @@ keymap.set("", "U", "<C-r>", { noremap = true })
 
 if not vim.g.vscode then
 	local has_comment_api, comment_api = pcall(require, "Comment.api")
+	local plugin_setup = require("plugins-setup")
 
 	-- save and quit
 	keymap.set("", "Q", ":q<CR>", { noremap = true })
@@ -30,6 +31,24 @@ if not vim.g.vscode then
 		keymap.set("n", "<leader>/", comment_api.toggle.linewise.current, { desc = "Toggle comment", silent = true })
 		keymap.set("x", "<leader>/", toggle_visual_comment, { desc = "Toggle comment", silent = true })
 	end
+
+	vim.api.nvim_create_user_command("Telescope", function(opts)
+		plugin_setup.load_telescope()
+		pcall(vim.api.nvim_del_user_command, "Telescope")
+		vim.cmd("Telescope " .. opts.args)
+	end, { nargs = "*" })
+
+	vim.api.nvim_create_user_command("NvimTreeToggle", function()
+		plugin_setup.load_nvim_tree()
+		pcall(vim.api.nvim_del_user_command, "NvimTreeToggle")
+		vim.cmd("NvimTreeToggle")
+	end, {})
+
+	vim.api.nvim_create_user_command("NvimTreeFindFile", function()
+		plugin_setup.load_nvim_tree()
+		pcall(vim.api.nvim_del_user_command, "NvimTreeFindFile")
+		vim.cmd("NvimTreeFindFile")
+	end, {})
 end
 
 -- search

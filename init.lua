@@ -1,18 +1,13 @@
 if vim.g.vscode then
 	vim.opt.clipboard:append("unnamedplus")
-
-	require("packer").startup(function(use)
-		use("rlue/vim-barbaric")
-	end)
+	require("plugins-setup").setup_vscode()
 
 	require("core.keymaps")
 else
-	require("plugins-setup")
+	require("plugins-setup").setup()
 	require("core.options")
 	require("plugins.comment")
-	require("plugins.nvim-tree")
 	require("plugins.lualine")
-	require("plugins.telescope")
 	require("plugins.nvim-cmp")
 	require("plugins.lsp.mason")
 	require("plugins.lsp.lspconfig")

@@ -4,16 +4,31 @@ if not setup then
 	return
 end
 
--- configure nvim-lint
-lint.linters_by_ft = {
-	javascript = { "eslint_d" },
-	typescript = { "eslint_d" },
-	typescriptreact = { "eslint_d" },
-}
+local lsp_util = require("plugins.lsp.util")
+
+local function pick_linter(bufnr)
+	if lsp_util.is_ox_project(bufnr) then
+		return nil
+	end
+
+	if vim.fn.executable("eslint_d") == 1 and lsp_util.is_eslint_project(bufnr) then
+		return { "eslint_d" }
+	end
+
+	return nil
+end
 
 -- run linters on save
 vim.api.nvim_create_autocmd({ "BufWritePost" }, {
-	callback = function()
-		require("lint").try_lint()
+	callback = function(args)
+		local ft = vim.bo[args.buf].filetype
+		if not lsp_util.is_js_filetype(ft) then
+			return
+		end
+
+		local linters = pick_linter(args.buf)
+		if linters then
+			require("lint").try_lint(linters)
+		end
 	end,
 })

@@ -1,125 +1,153 @@
--- auto install packer if not installed
-local ensure_packer = function()
-	local fn = vim.fn
-	local install_path = fn.stdpath("data") .. "/site/pack/packer/start/packer.nvim"
-	if fn.empty(fn.glob(install_path)) > 0 then
-		fn.system({ "git", "clone", "--depth", "1", "https://github.com/wbthomason/packer.nvim", install_path })
-		vim.cmd([[packadd packer.nvim]])
-		return true
+local M = {}
+
+local function gh(repo, opts)
+	local spec = { src = "https://github.com/" .. repo }
+	if opts then
+		return vim.tbl_extend("force", spec, opts)
 	end
-	return false
-end
-local packer_bootstrap = ensure_packer() -- true if packer was just installed
-
--- autocommand that reloads neovim and installs/updates/removes plugins
--- when file is saved
-vim.cmd([[ 
-  augroup packer_user_config
-    autocmd!
-    autocmd BufWritePost plugins-setup.lua source <afile> | PackerSync
-  augroup end
-]])
-
--- import packer safely
-local status, packer = pcall(require, "packer")
-if not status then
-	return
+	return spec
 end
 
--- add list of plugins to install
-return packer.startup(function(use)
-	-- packer can manage itself
-	use("wbthomason/packer.nvim")
+local legacy_packer_root = vim.fn.stdpath("data") .. "/site/pack/packer"
+local legacy_packer_backup = legacy_packer_root .. ".disabled"
 
-	use("nvim-lua/plenary.nvim") -- lua functions that many plugins use
+local function disable_legacy_packer_tree()
+	if vim.fn.isdirectory(legacy_packer_root) == 0 then
+		return
+	end
 
-	use("rlue/vim-barbaric")
-	use("bling/vim-bufferline")
-	use("bpietravalle/vim-bolt")
-	use("qpkorr/vim-renamer")
-	use("jacoborus/tender.vim")
+	if vim.fn.isdirectory(legacy_packer_backup) == 1 then
+		return
+	end
 
-	use("szw/vim-maximizer") -- maximizes and restores current window
+	local ok, err = os.rename(legacy_packer_root, legacy_packer_backup)
+	if not ok then
+		vim.schedule(function()
+			vim.notify(
+				"Failed to disable legacy packer plugins: " .. tostring(err),
+				vim.log.levels.WARN
+			)
+		end)
+	end
+end
 
-	-- essential plugins
-	use("tpope/vim-surround") -- add, delete, change surroundings (it's awesome)
-	use("vim-scripts/ReplaceWithRegister") -- replace with register contents using motion (gr + motion)
+local function register_pack_hooks()
+	local group = vim.api.nvim_create_augroup("vim_pack_hooks", { clear = true })
 
-	-- commenting with gc
-	use("numToStr/Comment.nvim")
+	vim.api.nvim_create_autocmd("PackChanged", {
+		group = group,
+		callback = function(ev)
+			local name = ev.data.spec.name
+			local kind = ev.data.kind
+			if kind ~= "install" and kind ~= "update" then
+				return
+			end
 
-	-- file explorer
-	use("nvim-tree/nvim-tree.lua")
+			if name == "telescope-fzf-native.nvim" then
+				vim.system({ "make" }, { cwd = ev.data.path }):wait()
+				return
+			end
 
-	-- vs-code like icons
-	use("kyazdani42/nvim-web-devicons")
-
-	-- statusline
-	use("nvim-lualine/lualine.nvim")
-
-	-- fuzzy finding w/ telescope
-	use({ "nvim-telescope/telescope-fzf-native.nvim", run = "make" }) -- dependency for better sorting performance
-	use({ "nvim-telescope/telescope.nvim", branch = "0.1.x" }) -- fuzzy finder
-
-	-- autocompletion
-	use("hrsh7th/nvim-cmp") -- completion plugin
-	use("hrsh7th/cmp-buffer") -- source for text in buffer
-	use("hrsh7th/cmp-path") -- source for file system paths
-
-	-- snippets
-	use("L3MON4D3/LuaSnip") -- snippet engine
-	use("saadparwaiz1/cmp_luasnip") -- for autocompletion
-	use("rafamadriz/friendly-snippets") -- useful snippets
-
-	-- managing & installing lsp servers, linters & formatters
-	use("williamboman/mason.nvim") -- in charge of managing lsp servers, linters & formatters
-	use({ "williamboman/mason-lspconfig.nvim", branch = "main" }) -- bridges gap b/w mason & lspconfig
-
-	-- configuring lsp servers
-	use("neovim/nvim-lspconfig") -- easily configure language servers
-	use("hrsh7th/cmp-nvim-lsp") -- for autocompletion
-	use({
-		"jinzhongjia/LspUI.nvim",
-		config = function()
-			require("LspUI").setup({})
+			if name == "nvim-treesitter" then
+				if not ev.data.active then
+					vim.cmd.packadd("nvim-treesitter")
+				end
+				pcall(vim.cmd, "TSUpdate")
+			end
 		end,
 	})
-	use("jose-elias-alvarez/typescript.nvim") -- additional functionality for typescript server (e.g. rename file & update imports)
-	use("onsails/lspkind.nvim") -- vs-code like icons for autocompletion
+end
 
-	-- formatting & linting
-	use("stevearc/conform.nvim") -- configure formatters
-	use("mfussenegger/nvim-lint") -- configure linters
+local function add_plugins(specs)
+	disable_legacy_packer_tree()
+	register_pack_hooks()
+	vim.pack.add(specs, {
+		confirm = false,
+		load = true,
+	})
+end
 
-	-- treesitter: Neovim 0.12+ uses built-in vim.treesitter for highlighting.
-	-- The legacy `master` branch of nvim-treesitter is frozen/incompatible.
-	-- The rewritten `main` branch is the supported migration path.
-	use({
-		"nvim-treesitter/nvim-treesitter",
-		branch = "main",
-		run = ":TSUpdate",
+local function add_optional_plugins(specs)
+	disable_legacy_packer_tree()
+	register_pack_hooks()
+	vim.pack.add(specs, {
+		confirm = false,
+		load = false,
+	})
+end
+
+local function load_once(name, callback)
+	local loaded = false
+
+	return function()
+		if not loaded then
+			vim.cmd.packadd(name)
+			if callback then
+				callback()
+			end
+			loaded = true
+		end
+	end
+end
+
+M.load_telescope = load_once("telescope.nvim", function()
+	require("plugins.telescope")
+end)
+
+M.load_nvim_tree = load_once("nvim-tree.lua", function()
+	require("plugins.nvim-tree")
+end)
+
+function M.setup()
+	add_plugins({
+		gh("nvim-lua/plenary.nvim"),
+		gh("rlue/vim-barbaric"),
+		gh("bling/vim-bufferline"),
+		gh("bpietravalle/vim-bolt"),
+		gh("qpkorr/vim-renamer"),
+		gh("szw/vim-maximizer"),
+		gh("tpope/vim-surround"),
+		gh("vim-scripts/ReplaceWithRegister"),
+		gh("numToStr/Comment.nvim"),
+		gh("kyazdani42/nvim-web-devicons"),
+		gh("nvim-lualine/lualine.nvim"),
+		gh("hrsh7th/nvim-cmp"),
+		gh("hrsh7th/cmp-buffer"),
+		gh("hrsh7th/cmp-path"),
+		gh("L3MON4D3/LuaSnip"),
+		gh("saadparwaiz1/cmp_luasnip"),
+		gh("rafamadriz/friendly-snippets"),
+		gh("williamboman/mason.nvim"),
+		gh("williamboman/mason-lspconfig.nvim", { version = "main" }),
+		gh("neovim/nvim-lspconfig"),
+		gh("hrsh7th/cmp-nvim-lsp"),
+		gh("onsails/lspkind.nvim"),
+		gh("stevearc/conform.nvim"),
+		gh("mfussenegger/nvim-lint"),
+		gh("nvim-treesitter/nvim-treesitter", { version = "main" }),
+		gh("windwp/nvim-autopairs"),
+		gh("windwp/nvim-ts-autotag"),
+		gh("lewis6991/gitsigns.nvim"),
+		gh("folke/neodev.nvim"),
+		gh("lambdalisue/suda.vim"),
+		gh("f-person/auto-dark-mode.nvim"),
+		gh("echasnovski/mini.nvim", { version = "stable" }),
 	})
 
-	-- auto closing
-	use("windwp/nvim-autopairs") -- autoclose parens, brackets, quotes, etc...
-	use("windwp/nvim-ts-autotag") -- autoclose tags (uses built-in vim.treesitter)
+	add_optional_plugins({
+		gh("jacoborus/tender.vim"),
+		gh("ellisonleao/gruvbox.nvim"),
+		gh("NLKNguyen/papercolor-theme"),
+		gh("nvim-tree/nvim-tree.lua"),
+		gh("nvim-telescope/telescope-fzf-native.nvim"),
+		gh("nvim-telescope/telescope.nvim", { version = "0.1.x" }),
+	})
+end
 
-	-- git integration
-	use("lewis6991/gitsigns.nvim") -- show line modifications on left hand side
+function M.setup_vscode()
+	add_plugins({
+		gh("rlue/vim-barbaric"),
+	})
+end
 
-	-- config completion
-	use("folke/neodev.nvim")
-
-	use("lambdalisue/suda.vim")
-
-	use("f-person/auto-dark-mode.nvim")
-	use({ "echasnovski/mini.nvim", branch = "stable" })
-
-	use("ellisonleao/gruvbox.nvim")
-
-	use("NLKNguyen/papercolor-theme")
-
-	if packer_bootstrap then
-		require("packer").sync()
-	end
-end)
+return M

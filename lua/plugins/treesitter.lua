@@ -7,6 +7,11 @@ if not ok then
 	return
 end
 
+local runtime_dir = vim.fn.stdpath("data") .. "/site/pack/core/opt/nvim-treesitter/runtime"
+if vim.fn.isdirectory(runtime_dir) == 1 and not vim.o.runtimepath:find(vim.pesc(runtime_dir), 1, true) then
+	vim.opt.runtimepath:append(runtime_dir)
+end
+
 ts.setup({
 	install_dir = vim.fn.stdpath("data") .. "/site",
 })
@@ -20,5 +25,8 @@ vim.api.nvim_create_autocmd("FileType", {
 	},
 	callback = function()
 		vim.treesitter.start()
+		if vim.tbl_contains({ "javascript", "typescript", "tsx" }, vim.bo.filetype) then
+			vim.bo.syntax = "ON"
+		end
 	end,
 })
