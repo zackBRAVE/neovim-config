@@ -41,12 +41,24 @@ if not vim.g.vscode then
 	keymap.set("n", "<leader>p", "<cmd>Telescope find_files<CR>", { noremap = true, desc = "Telescope find files" })
 	keymap.set("n", "<M-p>", "<cmd>Telescope<CR>", { noremap = true, desc = "Telescope" })
 
-	keymap.set("n", "<leader>e", vim.cmd.NvimTreeToggle, { noremap = true, desc = "Toggle file explorer" })
+	local nvim_tree_loaded = false
+	keymap.set("n", "<leader>e", function()
+		if nvim_tree_loaded then
+			vim.cmd("NvimTreeToggle")
+		else
+			vim.cmd.packadd("nvim-tree.lua")
+			require("plugins.nvim-tree")
+			nvim_tree_loaded = true
+			vim.cmd("NvimTreeToggle")
+		end
+	end, { noremap = true, desc = "Toggle file explorer" })
 
 	vim.api.nvim_create_autocmd("VimEnter", {
 		callback = function()
 			if vim.fn.argc() == 1 and vim.fn.isdirectory(vim.fn.argv(0)) == 1 then
-				vim.cmd.NvimTreeToggle()
+				vim.cmd.packadd("nvim-tree.lua")
+				require("plugins.nvim-tree")
+				vim.cmd("NvimTreeToggle")
 			end
 		end,
 	})
