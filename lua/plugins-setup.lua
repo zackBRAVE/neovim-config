@@ -94,10 +94,6 @@ M.load_telescope = load_once("telescope.nvim", function()
 	require("plugins.telescope")
 end)
 
-M.load_nvim_tree = load_once("nvim-tree.lua", function()
-	require("plugins.nvim-tree")
-end)
-
 function M.setup()
 	add_plugins({
 		gh("nvim-lua/plenary.nvim"),
@@ -132,13 +128,13 @@ function M.setup()
 		gh("lambdalisue/suda.vim"),
 		gh("f-person/auto-dark-mode.nvim"),
 		gh("echasnovski/mini.nvim", { version = "stable" }),
+		gh("nvim-tree/nvim-tree.lua"),
 	})
 
 	add_optional_plugins({
 		gh("jacoborus/tender.vim"),
 		gh("ellisonleao/gruvbox.nvim"),
 		gh("NLKNguyen/papercolor-theme"),
-		gh("nvim-tree/nvim-tree.lua"),
 		gh("nvim-telescope/telescope-fzf-native.nvim"),
 		gh("nvim-telescope/telescope.nvim", { version = "v0.2.2" }),
 	})

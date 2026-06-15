@@ -41,34 +41,12 @@ if not vim.g.vscode then
 	keymap.set("n", "<leader>p", "<cmd>Telescope find_files<CR>", { noremap = true, desc = "Telescope find files" })
 	keymap.set("n", "<M-p>", "<cmd>Telescope<CR>", { noremap = true, desc = "Telescope" })
 
-	vim.api.nvim_create_user_command("NvimTreeToggle", function()
-		vim.api.nvim_del_user_command("NvimTreeToggle")
-		plugin_setup.load_nvim_tree()
-		vim.cmd("NvimTreeToggle")
-	end, {})
-
-	vim.api.nvim_create_user_command("NvimTreeFindFile", function()
-		vim.api.nvim_del_user_command("NvimTreeFindFile")
-		plugin_setup.load_nvim_tree()
-		vim.cmd("NvimTreeFindFile")
-	end, {})
-
-	local nvim_tree_loaded = false
-	keymap.set("n", "<leader>e", function()
-		if nvim_tree_loaded then
-			vim.cmd("NvimTreeToggle")
-		else
-			pcall(vim.api.nvim_del_user_command, "NvimTreeToggle")
-			plugin_setup.load_nvim_tree()
-			nvim_tree_loaded = true
-			vim.cmd("NvimTreeToggle")
-		end
-	end, { noremap = true, desc = "Toggle file explorer" })
+	keymap.set("n", "<leader>e", vim.cmd.NvimTreeToggle, { noremap = true, desc = "Toggle file explorer" })
 
 	vim.api.nvim_create_autocmd("VimEnter", {
 		callback = function()
 			if vim.fn.argc() == 1 and vim.fn.isdirectory(vim.fn.argv(0)) == 1 then
-				vim.cmd("NvimTreeToggle")
+				vim.cmd.NvimTreeToggle()
 			end
 		end,
 	})

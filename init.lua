@@ -19,5 +19,6 @@ else
 	require("plugins.treesitter")
 	require("plugins.gitsigns")
 	require("plugins.auto-dark-mode")
+	require("plugins.nvim-tree")
 	require("core.keymaps")
 end
