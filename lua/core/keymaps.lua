@@ -53,10 +53,16 @@ if not vim.g.vscode then
 		vim.cmd("NvimTreeFindFile")
 	end, {})
 
+	local nvim_tree_loaded = false
 	keymap.set("n", "<leader>e", function()
-		vim.api.nvim_del_user_command("NvimTreeToggle")
-		plugin_setup.load_nvim_tree()
-		vim.cmd("NvimTreeToggle")
+		if nvim_tree_loaded then
+			vim.cmd("NvimTreeToggle")
+		else
+			pcall(vim.api.nvim_del_user_command, "NvimTreeToggle")
+			plugin_setup.load_nvim_tree()
+			nvim_tree_loaded = true
+			vim.cmd("NvimTreeToggle")
+		end
 	end, { noremap = true, desc = "Toggle file explorer" })
 end
 
