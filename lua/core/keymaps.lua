@@ -38,7 +38,7 @@ if not vim.g.vscode then
 		vim.cmd("Telescope " .. opts.args)
 	end, { nargs = "*" })
 
-	keymap.set("n", "<C-p>", "<cmd>Telescope find_files<CR>", { noremap = true, desc = "Telescope find files" })
+	keymap.set("n", "<leader>p", "<cmd>Telescope find_files<CR>", { noremap = true, desc = "Telescope find files" })
 	keymap.set("n", "<M-p>", "<cmd>Telescope<CR>", { noremap = true, desc = "Telescope" })
 
 	vim.api.nvim_create_user_command("NvimTreeToggle", function()
