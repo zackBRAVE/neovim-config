@@ -4,6 +4,8 @@ if vim.g.vscode then
 
 	require("core.keymaps")
 else
+	vim.g.loaded_netrw = 1
+	vim.g.loaded_netrwPlugin = 1
 	require("plugins-setup").setup()
 	require("core.options")
 	require("plugins.comment")
