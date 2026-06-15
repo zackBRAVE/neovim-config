@@ -64,6 +64,14 @@ if not vim.g.vscode then
 			vim.cmd("NvimTreeToggle")
 		end
 	end, { noremap = true, desc = "Toggle file explorer" })
+
+	vim.api.nvim_create_autocmd("VimEnter", {
+		callback = function()
+			if vim.fn.argc() == 1 and vim.fn.isdirectory(vim.fn.argv(0)) == 1 then
+				vim.cmd("NvimTreeToggle")
+			end
+		end,
+	})
 end
 
 -- search
